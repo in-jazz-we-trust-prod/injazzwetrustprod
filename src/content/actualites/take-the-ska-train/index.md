@@ -2,7 +2,7 @@
 title: "2ble Barrel + Mampy : Take The 'Ska' Train !"
 subtitle: "Samedi 21 février 2026 à 21h au Taquin (Toulouse)"
 pubDate: 2026-01-21
-endDate: 2026-10-26
+endDate: 2026-02-22
 heroImage: "./Mampy-2ble-Barrel-Take-The-Ska-Train-Le-Taquin-21-02-2026.png"
 cta:
   text: "Réserver ma place"

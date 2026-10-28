@@ -65,13 +65,13 @@ const {
 						<div class="w-full flex flex-col justify-center items-center lg:flex-row flex-wrap py-6 lg:py-12">
 							<div class="w-full text-center lg:text-start lg:w-1/2">
 								{ nextSlug && (
-									<a class="font-serif font-bold hover:text-primary text-2xl" href={`/actualites/${nextSlug}/`}>&lt; Article suivant</a>
+									<a class="font-serif font-bold hover:text-primary text-2xl before:content-['<_']" href={`/actualites/${nextSlug}/`}>Article suivant</a>
 								)}
 								
 							</div>
 							<div class="w-full lg:w-1/2 text-center lg:text-end">
 								{ prevSlug && (
-									<a class="font-serif font-bold hover:text-primary text-2xl" href={`/actualites/${prevSlug}/`}>Article précédent &gt;</a>
+									<a class="font-serif font-bold hover:text-primary text-2xl after:content-['_>']" href={`/actualites/${prevSlug}/`}>Article précédent</a>
 								)}
 							</div>
 						</div>

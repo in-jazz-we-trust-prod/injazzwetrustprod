@@ -40,8 +40,8 @@ export default defineConfig({
 	},
 	redirects: {
 		"/2ble-barrel/": "/artistes/2ble-barrel/",
-	    	"/the-dillingers/": "/artistes/the-dillingers/"
-		"/cetaces/", "/artistes/cetaces/",
-		"/gus/", "/artistes/gus/",
+	    	"/the-dillingers/": "/artistes/the-dillingers/",
+		"/cetaces/": "/artistes/cetaces/",
+		"/gus/": "/artistes/gus/",
 	},
 });
