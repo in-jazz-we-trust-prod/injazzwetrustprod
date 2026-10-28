@@ -10,7 +10,7 @@ import SideBar from '../components/SideBar.astro';
 import Socials from '../components/Socials.astro';
 import Contact from '../components/Contact.astro';
 import DatesSection from '../components/DatesSection.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
+import SideBarMenu from '../components/SideBarMenu.astro';
 
 type Props = CollectionEntry<'artistes'>['data'];
 
@@ -43,6 +43,7 @@ const path = [{ link: '/', icon: 'fa7-solid:house' }, { link: '/artistes/', text
 						/>
 					</div>
 				)}
+				<SideBarMenu />
 				<div slot="bottom">
 					<Contact info={contact} compact />
 					<Socials links={links} />

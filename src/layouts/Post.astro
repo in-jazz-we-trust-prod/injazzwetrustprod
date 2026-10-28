@@ -1,0 +1,83 @@
+---
+import { getImage, Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+
+import Section from '../components/Section.astro';
+import SideBar from '../components/SideBar.astro';
+import Contact from '../components/Contact.astro';
+import Socials from '../components/Socials.astro';
+
+type Props = CollectionEntry<'actualites'>['data'];
+
+const { 
+	title, 
+	subtitle, 
+	metaDescription = title, 
+	author, 
+	pubDate, 
+	cta, 
+	heroImage, 
+	socials, 
+	contact,
+	prevSlug,
+	prevTitle,
+	nextSlug,
+	nextTitle,
+} = Astro.props;
+
+
+---
+<BaseLayout title={title} description={metaDescription}>
+	<div class="flex flex-1 relative items-stretch h-full w-full mx-auto">
+		<div class="hidden lg:block w-64 shrink-0" data-sidebar-wrapper>
+			<SideBar data-theme="dark">
+				<div slot="bottom">
+					<Contact info={contact} compact />
+					<Socials links={socials} />
+				</div>
+			</SideBar>
+		</div>
+		<Section main class="w-full flex-1 min-h-[calc(100dvh-65px)]">
+			<Section class="w-full p-4 lg:p-8" sticky dark>
+				<h1 class="px-4 text-4xl w-full font-serif font-bold text-left lg:text-left">{title}</h1>
+				<div class="px-4 text-md w-full text-left lg:text-left text-base-content/80 tracking-wide uppercase">{subtitle}</div>
+			</Section>
+			<Section wrapper>
+				<div class="flex flex-col items-center">
+					{ heroImage && (
+						<div class="w-full max-w-lg py-6 lg:py-12">
+							<Image
+								src={heroImage}
+								alt=""
+							/>
+						</div>
+					)}
+					<div class="w-full max-w-lg text-md leading-relaxed prose prose-md [&_a]:hover:text-primary">
+						<slot />
+					</div>
+					{ cta && (
+						<div class="py-6 lg:py-12">
+							<a href={cta.url} class="btn btn-outline hover:btn-primary">{cta.text}</a>
+						</div>
+					)}
+					{ (prevSlug || nextSlug) && (
+						<div class="w-full flex flex-col justify-center items-center lg:flex-row flex-wrap py-6 lg:py-12">
+							<div class="w-full text-center lg:text-start lg:w-1/2">
+								{ nextSlug && (
+									<a class="font-serif font-bold hover:text-primary text-2xl" href={`/actualites/${nextSlug}/`}>&lt; Article suivant</a>
+								)}
+								
+							</div>
+							<div class="w-full lg:w-1/2 text-center lg:text-end">
+								{ prevSlug && (
+									<a class="font-serif font-bold hover:text-primary text-2xl" href={`/actualites/${prevSlug}/`}>Article précédent &gt;</a>
+								)}
+							</div>
+						</div>
+					)}
+				</div>
+			</Section>
+		</Section>
+	</div>
+</BaseLayout>

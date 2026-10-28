@@ -9,6 +9,8 @@ const actualites = defineCollection({
 		z.object({
 			title: z.string(),
 			subtitle: z.string(),
+			metaDescription: z.string().optional(),
+			author: z.string().optional(),
 			pubDate: z.coerce.date(),
 			heroImage: image().optional(),
 			cta: z.object({
@@ -16,6 +18,22 @@ const actualites = defineCollection({
 				url: z.string(),
 			}).optional(),
 			endDate: z.coerce.date().optional(),
+			socials: z.object({
+				facebook: z.url().optional(),
+				instagram: z.url().optional(),
+				bandcamp: z.url().optional(),
+				youtube: z.url().optional(),
+				spotify: z.url().optional(),
+			}).optional(),
+			contact: z.object({
+				person: z.string(),
+				role: z.string(),
+				tel: z.object({
+					int: z.e164(),
+					text: z.string(),
+				}).optional(),
+				email: z.email().optional(),
+			}).optional(),
 		}),
 });
 

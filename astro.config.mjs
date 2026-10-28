@@ -38,4 +38,10 @@ export default defineConfig({
 			hostname: 'f4.bcbits.com',
 		}],
 	},
+	redirects: {
+		"/2ble-barrel/": "/artistes/2ble-barrel/",
+	    	"/the-dillingers/": "/artistes/the-dillingers/"
+		"/cetaces/", "/artistes/cetaces/",
+		"/gus/", "/artistes/gus/",
+	},
 });

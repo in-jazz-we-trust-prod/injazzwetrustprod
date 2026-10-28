@@ -1,0 +1,85 @@
+---
+import { getMenu, type MenuItem } from '../config/menu';
+
+const menuItems = await getMenu();
+const currentPath = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+
+function findActiveItem(items: MenuItem[]): MenuItem | null {
+  for (const item of items) {
+    if (item.href === currentPath) return item;
+    if (item.items) {
+      const found = findActiveItem(item.items);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+const activeItem = findActiveItem(menuItems);
+const hasSubItems = activeItem && activeItem.items && activeItem.items.length > 0;
+---
+
+{hasSubItems && (
+  <ul class="menu menu-md p-0 w-full" data-sidebar-menu>
+    {activeItem.items.map((subSubItem) => (
+      <li>
+        <a 
+          href={`${activeItem.href}${subSubItem.href}`} 
+          class="hover:text-accent font-medium py-2 px-3 block transition-colors uppercase"
+          data-anchor={subSubItem.href}
+        >
+          {subSubItem.name}
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
+
+<script>
+  function initScrollSpy() {
+    const menu = document.querySelector('[data-sidebar-menu]');
+    if (!menu) return;
+
+    const links = menu.querySelectorAll('a[data-anchor]');
+    const sections: HTMLElement[] = [];
+    
+    links.forEach(link => {
+      const hash = link.getAttribute('data-anchor');
+      if (hash) {
+        const section = document.querySelector(hash);
+        if (section instanceof HTMLElement) {
+          sections.push(section);
+        }
+      }
+    });
+
+    const options = {
+      root: null,
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          
+          links.forEach(link => {
+            const targetAnchor = link.getAttribute('data-anchor');
+            if (targetAnchor === `#${id}`) {
+              link.classList.add('active', 'text-accent');
+            } else {
+              link.classList.remove('active', 'text-accent');
+            }
+          });
+        }
+      });
+    }, options);
+
+    sections.forEach(section => observer.observe(section));
+  }
+
+  initScrollSpy();
+  document.addEventListener('astro:after-swap', initScrollSpy);
+</script>
+

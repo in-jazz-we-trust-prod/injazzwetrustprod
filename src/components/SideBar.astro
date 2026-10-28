@@ -1,153 +1,72 @@
 ---
-import { getMenu, type MenuItem } from '../config/menu';
-
-const { class: className, ...rest } = Astro.props;
-
-const menuItems = await getMenu();
-
-const currentPath = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
-
-// Algorithme de recherche récursif pour trouver l'élément de configuration de la page courante
-function findActiveItem(items: MenuItem[]): MenuItem | null {
-  for (const item of items) {
-    if (item.href === currentPath) {
-      return item;
-    }
-    if (item.items) {
-      const found = findActiveItem(item.items);
-      if (found) {
-	return found;
-      }
-    }
-  }
-  return null;
+interface Props {
+  class?: string;
+  hasItems?: boolean;
 }
 
-const activeItem = findActiveItem(menuItems);
+const { class: className, hasItems = true } = Astro.props;
 ---
 
-{/* La Sidebar ne s'affiche que si la page en cours possède des sous-éléments imbriqués (subsubitems) */}
-{activeItem && activeItem.items && activeItem.items.length > 0 && (
-	<aside data-theme="dark" class:list={["flex flex-col w-64 fixed top-[65px] h-[calc(100dvh-65px)] p-4 bg-base-100 shadow-md overflow-hidden transition-[padding] duration-75 z-10", className]} style="padding-bottom: calc(1rem + var(--footer-push, 0px));">
-		{
-			Astro.slots.has('top') && 
-			(
-				<div class="w-full h-[112px] shrink-0 border-b-1 border-base-content/30">
-					<slot name="top" />
-				</div>
-			)
-		}
-		<div class="overflow-y-auto min-h-0 w-full pt-2 mb-4 pr-1">
-			<ul class="menu menu-md p-0 w-full" data-sidebar-menu>
-				{activeItem.items.map((subSubItem) => (
-					<li>
-						<a 
-							href={`${activeItem.href}${subSubItem.href}`} 
-							class="hover:text-accent font-medium py-2 px-3 block transition-colors uppercase"
-							data-anchor={subSubItem.href}
-						>
-							{subSubItem.name}
-						</a>
-					</li>
-				))}
-			</ul>
-		</div>
-		{
-			Astro.slots.has('bottom') && 
-			(
-				<div class="flex-grow"></div>
-                        <div class="divider m-0 shrink-0"></div>
-                        <div class="w-full shrink-0 pt-3">
-                                <slot name="bottom" />
-                        </div>
-			)
-		}
-        </aside>
+{/* La Sidebar ne s'affiche que si l'indicateur hasItems est vrai */}
+{hasItems && (
+  <aside 
+    data-theme="dark" 
+    data-sidebar-aside
+    class:list={[
+      "flex flex-col w-64 fixed top-[65px] h-[calc(100dvh-65px)] p-4 bg-base-100 overflow-hidden transition-[padding] duration-75 z-10", 
+      className
+    ]} 
+    style="padding-bottom: calc(1rem + var(--footer-push, 0px));"
+  >
+    {Astro.slots.has('top') && (
+      <div class="w-full h-[112px] shrink-0 border-b border-base-content/30">
+        <slot name="top" />
+      </div>
+    )}
+
+    <div class="overflow-y-auto min-h-0 w-full pt-2 mb-4 pr-1">
+      <slot /> {/* Slot par défaut (principal) */}
+    </div>
+
+    {Astro.slots.has('bottom') && (
+      <>
+        <div class="flex-grow" />
+        <div class="divider m-0 shrink-0" />
+        <div class="w-full shrink-0 pt-3">
+          <slot name="bottom" />
+        </div>
+      </>
+    )}
+  </aside>
 )}
 
 <script>
-// Ce script s'exécute uniquement côté client dans le navigateur
-        function initScrollSpy() {
-                const menu = document.querySelector('[data-sidebar-menu]');
-                if (!menu) return;
+  function initSidebarShrink() {
+    const sidebar = document.querySelector('[data-sidebar-aside]') as HTMLElement;
+    const footer = document.querySelector('footer'); 
+    
+    if (!sidebar || !footer) return;
 
-                const links = menu.querySelectorAll('a[data-anchor]');
-                
-                // 1. Récupérer toutes les sections cibles sur la page (ex: #bio, #videos)
-                const sections: HTMLElement[] = [];
-                links.forEach(link => {
-                        const hash = link.getAttribute('data-anchor');
-                        if (hash) {
-                                const section = document.querySelector(hash);
-                                if (section instanceof HTMLElement) {
-                                        sections.push(section);
-                                }
-                        }
-                });
+    function updateHeight() {
+      const footerRect = footer.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
 
-                // 2. Configurer l'Observer
-                // rootMargin: '-20% 0px -60% 0px' simule une ligne de détection horizontale
-                // située environ au premier tiers supérieur de l'écran de l'utilisateur.
-                const options = {
-                        root: null,
-                        rootMargin: '-20% 0px -60% 0px',
-                        threshold: 0
-                };
+      if (footerRect.top < windowHeight) {
+        const overlap = windowHeight - footerRect.top;
+        sidebar.style.setProperty('--footer-push', `${overlap}px`);
+      } else {
+        sidebar.style.setProperty('--footer-push', '0px');
+      }
+    }
 
-                const observer = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                                if (entry.isIntersecting) {
-                                        const id = entry.target.getAttribute('id');
-                                        
-                                        // Mettre à jour les classes du menu daisyUI
-                                        links.forEach(link => {
-                                                const targetAnchor = link.getAttribute('data-anchor');
-                                                if (targetAnchor === `#${id}`) {
-                                                        link.classList.add('active', 'text-accent');
-                                                } else {
-                                                        link.classList.remove('active', 'text-accent');
-                                                }
-                                        });
-                                }
-                        });
-                }, options);
+    window.addEventListener('scroll', updateHeight, { passive: true });
+    window.addEventListener('resize', updateHeight);
+    
+    updateHeight();
+  }
 
-                // 3. Lancer l'observation sur chaque section trouvée
-                sections.forEach(section => observer.observe(section));
-        }
-	
-	// --- SCRIPT DE POUSSÉE PAR LE PADDING ---
-        function initSidebarShrink() {
-                const sidebar = document.querySelector('[data-sidebar-wrapper] aside') as HTMLElement;
-                const footer = document.querySelector('footer'); 
-                
-                if (!sidebar || !footer) return;
-
-                function updateHeight() {
-                        const footerRect = footer.getBoundingClientRect();
-                        const windowHeight = window.innerHeight;
-
-                        // Si le haut du footer entre dans l'écran visible
-                        if (footerRect.top < windowHeight) {
-                                const overlap = windowHeight - footerRect.top;
-                                sidebar.style.setProperty('--footer-push', `${overlap}px`);
-                        } else {
-                                sidebar.style.setProperty('--footer-push', '0px');
-                        }
-                }
-
-                window.addEventListener('scroll', updateHeight, { passive: true });
-                window.addEventListener('resize', updateHeight);
-                
-                updateHeight();
-        }
-
-        // Lancement à l'initialisation de la page
-        initScrollSpy();
-	initSidebarShrink();
-
-        // Si vous utilisez un système de transition de page (ex: Astro Transitions) :
-        document.addEventListener('astro:after-swap', () => {
-		initScrollSpy();
-	});
+  // Lancement à l'initialisation et après transition de page
+  initSidebarShrink();
+  document.addEventListener('astro:after-swap', initSidebarShrink);
 </script>
+

@@ -51,7 +51,7 @@ const alignClass = alignClasses[align] || '';
 ---
 <Element
 	id={id}
-	class:list={[{ 'justify-center flex': wrapper, 'sticky z-30 shadow-sm': sticky }, bgClasses,  className]}
+	class:list={[{ 'justify-center flex': wrapper, 'sticky z-30': sticky }, bgClasses,  className]}
 	style={ split ? '' : style }
 	data-theme={dark ? 'dark' : 'light'}
 	{...(main && { 'role': 'main' })}
