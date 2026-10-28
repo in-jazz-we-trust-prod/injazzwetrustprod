@@ -1,0 +1,37 @@
+---
+import { Icon } from 'astro-icon/components';
+
+import { defaultSocialLinks, socialConfig } from '../config/socials';
+
+const { links, class: className, ...rest } = Astro.props;
+
+const targetSocials = links?.socials ? links.socials : defaultSocialLinks;
+
+const activeSocials = Object.entries(targetSocials)
+        .filter(([_, href]) => !!href) // Élimine les réseaux non définis (ex: undefined ou chaîne vide)
+        .map(([key, href]) => ({
+                href,
+                ...socialConfig[key]
+        }))
+        // Sécurité si un réseau inconnu ou non configuré dans SOCIAL_CONFIG était injecté
+        .filter(item => !!item.name);
+---
+
+{activeSocials.length > 0 && (
+        <ul class:list={["menu", "menu-horizontal", "px-1", className]} {...rest}>
+                {activeSocials.map((item) => (
+                        <li>
+                                <a 
+                                        class="p-[0.5em] hover:text-accent transition-colors" 
+                                        href={item.href} 
+                                        target="_blank" 
+                                        rel="noopener"
+                                        aria-label={item.name}
+                                >
+                                        <Icon class="text-md lg:text-lg" title={item.name} name={item.icon} />
+                                </a>
+                        </li>
+                ))}
+        </ul>
+)}
+

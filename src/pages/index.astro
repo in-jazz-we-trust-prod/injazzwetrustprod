@@ -1,0 +1,69 @@
+---
+import { getImage, Image } from 'astro:assets';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+import Section from '../components/Section.astro';
+import Contact from '../components/Contact.astro';
+import DatesSection from '../components/DatesSection.astro';
+import ArtistsSection from '../components/ArtistsSection.astro';
+import NewsSection from '../components/NewsSection.astro';
+import LatestPostModal from '../components/LatestPostModal.astro';
+
+import logo from '../assets/In-Jazz-We-Trust-Prod-Logo.png';
+
+---
+
+<BaseLayout>
+	<Section main>
+		<Section id="accueil" class="hero min-h-[calc(100dvh-65px)]">
+			<div class="hero-content">
+				<div class="p-4 w-full flex flex-col lg:flex-row flex-wrap justify-center">
+					<div class="max-w-sm self-center">
+						<Image
+							class="max-w-sm"
+							src={logo}
+							priority
+							quality="mid"
+							layout="constrained"
+							format="webp"
+							alt="Logo de In Jazz We Trust Prod." 
+						/>
+					</div>
+					<div class="flex flex-col justify-center p-4">
+						<span class="pb-4 hidden lg:block text-4xl lg:text-7xl text-center font-serif">In Jazz We Trust Prod.</span>
+						<div class="pb-4 w-full border-t-2 border-primary"></div>
+						<p class="pb-4 lg:text-lg text-center lg:text-center tracking-widest uppercase font-medium">Association de diffusion musicale & booking<br class="hidden lg:block" /> basée dans les Hautes-Pyrénées.</p>
+						<a href="#artistes" role="button" class="btn hover:btn-primary btn-outline self-center">Découvrir les artistes</a>
+					</div>
+				</div>
+			</div>
+		</Section>
+		<Section id="artistes" wrapper name="Artistes" align="left">
+			<ArtistsSection />
+		</Section>
+
+		<Section id="qui-sommes-nous" wrapper name="Qui sommes nous ?" align="left" split right background={logo} contain>
+			<div class="w-full p-4 *:pb-4 last:pb-0 text-lg text-justify">
+				<p><strong>In Jazz We trust Prod</strong> est une structure associative dédiée au booking et à la diffusion artistique, avec une attention particulière portée aux groupes issus des Hautes-Pyrénées.</p>
+				<p>Ouverte et résolument éclectique, l’association accompagne des projets musicaux aux <strong>esthétiques variées</strong>, en favorisant la <strong>diversité</strong> et la <strong>richesse de la scène locale</strong>.</p>
+				<p>L’association soutient activement les <strong>groupes locaux</strong>, avec pour objectif de créer de véritables opportunités de concerts et de rencontres avec les publics.</p>
+				<p>Portée par une petite équipe dynamique, engagée et motivée, <strong>In Jazz We Trust Prod</strong> s’inscrit pleinement dans le réseau culturel local et régional, en développant des partenariats durables et en participant activement à la vie musicale du territoire.</p>
+			</div>
+			<div class="w-full flex justify-center"><a href="#actualites" role="button" class="m-4 btn hover:btn-primary btn-outline">Voir les dernières actus</a></div>
+		</Section>
+		<Section id="actualites" wrapper name="Actualités" align="left">
+			<NewsSection compact />
+		</Section>
+		<Section id="prochains-concerts" wrapper name="Prochains concerts" align="left">
+			<DatesSection />
+		</Section>
+		<Section id="contact" wrapper name="Contact" align="left">
+			<div class="w-full flex items-center justify-center">
+				<Contact class="max-w-sm" />
+			</div>
+		</Section>
+	</Section>
+	<LatestPostModal />
+</BaseLayout>
+

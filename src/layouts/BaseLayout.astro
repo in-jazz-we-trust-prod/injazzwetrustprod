@@ -1,0 +1,77 @@
+---
+import "../assets/app.css";
+import { getImage, Font } from "astro:assets";
+import type { CollectionEntry } from 'astro:content';
+import NavBar from "../components/NavBar.astro";
+import Footer from "../components/Footer.astro";
+import { SEO } from "astro-seo";
+
+type Props = CollectionEntry<'groupes'>['data'];
+
+const { title, description } = Astro.props;
+
+const titleBase = 'In Jazz We Trust Prod';
+const fullTitle = title ? `${title} &middot ${titleBase}` : titleBase;
+const image = new URL('/le-tout-puissant-tropical-orchestra.jpg', Astro.url);
+
+---
+
+<!doctype html>
+<html lang="fr" class="scroll-smooth scroll-pt-[65px]" data-theme="light">
+	<head>
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<meta name="apple-mobile-web-app-title" content="In Jazz We Trust Prod." />
+		<link rel="manifest" href="/site.webmanifest" />
+		<meta name="generator" content={Astro.generator} />
+		<Font cssVariable="--font-lato" />
+		<Font cssVariable="--font-darumadrop-one" />
+		<SEO
+			title={fullTitle}
+			description={description}
+			charset="UTF-8"	
+			openGraph={{
+				basic: {
+					title: fullTitle,
+					type: 'website',
+					image: image.href,
+					url: Astro.url.href,
+				},
+				image: {
+					secureUrl: image.href,
+					width: 1200,
+					height: 682,
+					alt: fullTitle,
+				},
+				optional: {
+					description: description,
+					locale: 'fr-FR',
+				},
+			}}
+			twitter={{
+				card: 'summary_large_image',
+				title: fullTitle,
+				image: image.href,
+				imageAlt: fullTitle,
+				description: description,
+			}}
+		/>
+	</head>
+	<body>
+		<NavBar />
+		<div class="relative z-0">
+			<slot />
+		</div>
+		<Footer class="relative z-30" />
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+	}
+</style>

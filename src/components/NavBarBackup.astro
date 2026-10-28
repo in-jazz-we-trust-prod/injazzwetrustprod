@@ -1,0 +1,92 @@
+---
+import logo from "../assets/In-Jazz-We-Trust-Prod-Logo.png";
+
+import { Image } from 'astro:assets';
+import Socials from '../components/Socials.astro';
+
+const menuItems = [
+	{ name: 'ACCUEIL', href: '#accueil' },
+	{ name: 'QUI SOMMES NOUS ?', href: '#qui-sommes-nous' },
+	{ name: 'PROCHAINS CONCERTS', href: '#prochainsconcerts' },
+	{ 
+		name: 'GROUPES', 
+		href: '/groupes', 
+		items: [
+			{ 
+				name: 'The Dillingers', 
+				href: '/the-dillingers',
+				items: [
+					{ name: 'VIDEOS', href: '#videos' },
+					{ name: 'BIO', href: '#bio' },
+					{ name: 'AUDIO', href: '#audio' },
+					{ name: 'CONCERTS', href: '#concerts' },
+				],
+			},
+		],
+	},
+	{ name: 'CONTACT', href: '#contact' },
+];
+---
+
+<header role="banner" class="sticky top-0 navbar shadow-sm z-1000" data-theme="light">
+	<div class="navbar-start">
+    		<a href="#accueil" class="btn btn-ghost">
+			<Image src={logo} priority alt="Logo de In Jazz We Trust Prod" height="36" format="webp" />
+    		</a>
+  	</div>
+  	<div role="navigation" class="navbar-center hidden lg:flex">
+    		<ul class="menu menu-horizontal px-1">
+			{menuItems.map((item) => {
+				if (item.items) {
+					return (
+						<li class="flex flex-row items-center">
+							<div class="dropdown dropdown-center">
+								<div tabIndex="0" role="button" class="hover:text-accent focus:text-accent">
+									{item.name}
+									<svg class="mt-px size-2 fill-current opacity-60 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048"><path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path></svg>
+								</div>
+								<ul tabIndex="-1" class="menu menu-sm dropdown-content z-1 w-30 p-2 shadow" data-theme="black">
+									{item.items.map((subItem) => (<li><a class="hover:text-accent" href={subItem.href}>{subItem.name}</a></li>))}
+								</ul>
+							</div>
+						</li>
+					);
+				} else {
+					return (<li><a class="hover:text-accent" href={item.href}>{item.name}</a></li>);
+				}
+			})}
+    		</ul>
+  	</div>
+  	<div class="navbar-end">
+		<Socials class="hidden lg:flex" />
+    		<div class="dropdown dropdown-end">
+      			<div tabIndex="0" role="button" class="btn btn-ghost lg:hidden" aria-label="Menu">
+				<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /> </svg>
+      			</div>
+      			<nav role="navigation" tabIndex="-1" class="menu menu-md dropdown-content z-1 mt-3 w-52 p-2 shadow lg:hidden" data-theme="light">
+				<ul>
+				{menuItems.map((item) => {
+					if (item.items) {
+						return (
+							<li>
+								<a href={item.href}>{item.name}</a>
+								<ul class="p-2">
+									{item.items.map((subItem) => (
+									<li><a href={subItem.href}>{subItem.name}</a></li>
+									))}
+								</ul>
+							</li>
+						);
+					} else {
+						return (
+							<li><a href={item.href}>{item.name}</a></li>
+						);
+					}
+				})}
+				</ul>
+				<div class="divider m-0"></div>
+				<Socials />
+      			</nav>
+    		</div>
+ 	 </div>
+</header>

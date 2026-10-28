@@ -1,0 +1,78 @@
+---
+import { getImage } from 'astro:assets';
+const {
+	id,
+	class: className = '',
+	name,
+	wrapper = false,
+	dark = false,
+	main = false,
+	titleElement: TitleElement = 'h2',
+	align = 'left',
+	right = false,
+	background,
+	split = false,
+	contain = false,
+	repeat = false,
+	fixed = false,
+	sticky = false,
+	stickyOffset = '65px',
+} = Astro.props;
+
+const Element = main ? 'main' : 'section'; 
+
+const hasBackground = !!background;
+
+let bgStyle = '';
+if (hasBackground) {
+	const optimizedBackground = await getImage({ src: background, format: 'webp' });
+	bgStyle = `background-image: url(${optimizedBackground.src});`;
+} 
+const stickyStyle = sticky ? `top: ${stickyOffset};` : '';
+const style = `${bgStyle} ${stickyStyle}`;
+
+const bgClasses = {
+	'bg-cover': !contain,
+	'bg-contain': contain,
+	'bg-repeat': repeat,
+	'bg-no-repeat': !repeat,
+	'bg-scroll': !fixed,
+	'bg-fixed': fixed,
+	'bg-center': true,
+};
+
+const alignClasses = {
+	center: 'mx-auto items-center text-center',
+	left: 'mr-auto items-start text-left',
+	right: 'ml-auto items-end text-right',
+};
+
+const alignClass = alignClasses[align] || '';
+---
+<Element
+	id={id}
+	class:list={[{ 'justify-center flex': wrapper, 'sticky z-30 shadow-sm': sticky }, bgClasses,  className]}
+	style={ split ? '' : style }
+	data-theme={dark ? 'dark' : 'light'}
+	{...(main && { 'role': 'main' })}
+>
+	{ 
+		wrapper ? 
+		(
+			<div class=`w-full  max-w-[1140px] py-4 px-4 lg:py-8 lg:px-12 flex flex-wrap flex-col lg:flex-row gap-6 items-stretch`>
+			{ split && !right && <aside class:list={['w-full', 'lg:w-[calc(45%-12px)] min-h-[250px] lg-min-h-full overflow-hidden', bgClasses]} style={style}></aside> }
+				<div class=`w-full flex flex-col ${split ? "lg:w-[calc(55%-12px)]" : "lg:w-full"}`>
+				{ name && (
+					<div class:list={["flex flex-col w-fit mb-6 px-4", alignClass]}">
+						<TitleElement class="text-3xl font-serif text-center text-base-content leading-none"><strong>{name}</strong></TitleElement>
+						<div class="w-full border-t-2 border-primary mt-2"></div>
+					</div>
+				)}
+					<slot />
+				</div>
+			{ split && right && <aside class:list={['w-full', 'lg:w-[calc(45%-12px)] min-h-[250px] lg:min-h-full overflow-hidden', bgClasses]} style={style}></aside> }
+			</div>
+		) :
+		<slot />
+	}
+</Element>

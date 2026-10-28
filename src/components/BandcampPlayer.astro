@@ -1,0 +1,73 @@
+---
+interface Props {
+  albumId: string;
+  albumName: string;
+  band: string;
+  title?: string;
+  className?: string;
+}
+
+const { albumId, albumName, band, title = "Bandcamp music player", className } = Astro.props;
+---
+
+<bandcamp-player class:list={["relative w-full overflow-hidden", className]}>
+	<div data-bandcamp-loading class="flex w-52 flex-col gap-4">
+		<div class="skeleton h-48 w-full"></div>
+		<div class="skeleton h-4 w-28"></div>
+		<div class="skeleton h-4 w-full"></div>
+		<div class="skeleton h-4 w-full"></div>
+		<div class="skeleton h-4 w-full"></div>
+		<div class="skeleton h-4 w-full"></div>
+	</div>
+	<iframe 
+		data-bandcamp-iframe 
+		class="iframe-loading"
+		width="100%" 
+		height="100%" 
+		loading="lazy" 
+		title={title}
+		src={`https://bandcamp.com/EmbeddedPlayer/album=${albumId}/artwork=large/size=large/bgcol=eeeeee/linkcol=df4a30/transparent=true/`}
+		seamless
+	>
+		<a href={album.link}>
+			{`${albumName} de ${band}`}
+		</a>
+	</iframe>
+</bandcamp-player>
+
+<script>
+	class BandcampPlayer extends HTMLElement {
+		connectedCallback() {
+			requestIdleCallback(() => {
+				const loading = this.querySelector("[data-bandcamp-loading]");
+				if (!(loading instanceof HTMLElement)) return;
+
+				const iframe = this.querySelector("[data-bandcamp-iframe]");
+				if (!(iframe instanceof HTMLIFrameElement)) return;
+				//iframe.style.cssText = 'position: absolute; visibility: hidden;';
+
+				iframe.addEventListener("load", () => {
+					loading.remove();
+					iframe.classList.add("iframe-loaded");
+					//iframe.style.cssText = 'position: relative; visibility: visible;';
+					console.log('loaded');
+				});
+			 });
+		}
+	}
+
+	customElements.define('bandcamp-player', BandcampPlayer);
+</script>
+
+<style>
+.iframe-loading {
+	position: absolute;
+	visibility: hidden;
+}
+
+.iframe-loaded {
+	position: relative;
+	visibility: visible;
+}
+
+</style>

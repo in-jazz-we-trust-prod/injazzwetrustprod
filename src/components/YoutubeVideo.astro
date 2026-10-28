@@ -1,0 +1,82 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  videoId: string;
+  thumbnail?: string;
+  title: string;
+  className?: string;
+}
+
+const { videoId, thumbnail, title, class: className } = Astro.props;
+
+const resolvedThumbnail = thumbnail || `https://i.ytimg.com/vi_webp/${videoId}/maxresdefault.webp`;
+
+const ariaLabel = `Lancer la vidéo Youtube ${title}`;
+---
+
+<div class:list={["relative flex aspect-video h-full w-full cursor-pointer group overflow-hidden justify-center", className]} data-youtube-video>
+  <button
+    type="button"
+    class="absolute inset-0 aspect-video h-full w-full overflow-hidden"
+    data-youtube-trigger
+    aria-label={ariaLabel}
+    data-video-id={videoId}
+    data-title={title}
+  >
+    <Image
+      layout="full-width"
+      src={resolvedThumbnail}
+      width={1280}
+      height={720}
+      class="h-full w-full object-cover"
+      alt={title}
+    />
+
+    <span class="absolute cursor-pointer inset-0 flex items-center justify-center">
+      <Icon class="h-20 w-20 text-primary opacity-70 transition-opacity group-hover:opacity-100" name="fa7-brands:youtube" />
+    </span>
+  </button>
+</div>
+
+<script>
+	for (const root of document.querySelectorAll('[data-youtube-video]')) {
+	    const trigger = root.querySelector('[data-youtube-trigger]');
+	    const videoId = trigger.dataset.videoId;
+	    const title = trigger.dataset.title;
+	    if (!videoId) continue;
+
+	    const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`;
+
+	    const activate = () => {
+	      const skeleton = document.createElement("div");
+	      skeleton.classList.add("loading", "loading-spinner", "loading-xl");
+
+	      const iframe = document.createElement("iframe");
+	      iframe.src = `${src}?autoplay=1`;
+	      iframe.title = title;
+	      iframe.allow =
+		"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+	      iframe.allowFullscreen = true;
+	      iframe.loading = "eager";
+	      iframe.referrerPolicy = "strict-origin-when-cross-origin";
+	      iframe.classList.add("w-full", "h-full", "absolute", "inset-0");
+	      root.replaceChildren(skeleton, iframe);
+	      
+	      iframe.addEventListener("load", () => {
+		skeleton.remove();
+	      });
+
+	    };
+
+	    // click and accessibility activation
+	    trigger.addEventListener("click", activate, { once: true });
+	    trigger.addEventListener("keydown", (event) => {
+	      if (event.key === "Enter" || event.key === " ") {
+		event.preventDefault();
+		activate();
+	      }
+	    }, { once: true });
+	  }
+</script>

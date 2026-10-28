@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import ArtistsSection from '../../components/ArtistsSection.astro';
+
+const title = "Artistes";
+const description = "Les artistes suivis par In Jazz We Trust Prod.";
+---
+<BaseLayout title={title} description={description}>
+	<Section main class="w-full min-h-[calc(100dvh-65px)]">
+		<Section name="Artistes" wrapper titleElement="h1">
+			<ArtistsSection titleElement="h2" />
+		</Section>
+	</Section>
+</BaseLayout>

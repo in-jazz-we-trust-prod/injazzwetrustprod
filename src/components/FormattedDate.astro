@@ -1,0 +1,14 @@
+---
+interface Props {
+	date: Date;
+}
+
+const { date } = Astro.props;
+
+const day = date.getDate();
+const needSup = day === 1;
+
+const monthAndYear = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+---
+
+<time datetime={date.toISOString()}>{day}{ needSup && <sup>er</sup>} {monthAndYear}</time>

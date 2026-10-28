@@ -1,0 +1,60 @@
+---
+import BandsintownViewer from './BandsintownViewer.astro';
+import Section from './Section.astro';
+
+const { class: className, band = '' } = Astro.props;
+---
+
+<div class:list={['w-full flex flex-col', className]}>
+  <BandsintownViewer id="bandsintown-viewer" idle date="upcoming" {...(band && { band })} />
+  
+  <div class="w-full flex justify-center p-4">
+    <button id="dates-button" class="btn btn-outline hover:btn-primary">Voir tous les concerts</button>
+  </div>
+
+  <dialog id="dates-modal" class="modal">
+    <div class="modal-box h-dvh max-w-dvw w-dvw p-0">
+      <header data-theme="light" class="sticky top-0 z-1000">
+        <form method="dialog">
+          <button class="btn btn-circle hover:btn-primary absolute right-2 top-2">X</button>
+        </form>
+      </header>
+      <Section name="Concerts" class="min-h-dvh" wrapper dark titleElement="div">
+        <BandsintownViewer id="tous-les-concerts" idle date="all" byYear {...(band && { band })} />
+      </Section>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  function initConcerts() {
+    const upcomingViewer = document.getElementById('bandsintown-viewer');
+    const allViewer = document.getElementById('tous-les-concerts');
+    const datesButton = document.getElementById('dates-button');
+    const datesModal = document.getElementById('dates-modal') as HTMLDialogElement | null;
+
+    if (upcomingViewer) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            upcomingViewer.removeAttribute('idle');
+            observer.disconnect(); // On arrête d'observer une fois activé
+          }
+        });
+      }, { rootMargin: '100px' }); // Déclenche un peu avant pour éviter les bugs si hauteur = 0
+      
+      observer.observe(upcomingViewer);
+    }
+
+    if (datesButton && datesModal && allViewer) {
+      datesButton.addEventListener('click', () => {
+        allViewer.removeAttribute('idle');
+        datesModal.showModal();
+      });
+    }
+  }
+
+  // S'exécute immédiatement et proprement au chargement
+  initConcerts();
+</script>
+

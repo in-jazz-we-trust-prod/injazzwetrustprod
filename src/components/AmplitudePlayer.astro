@@ -1,0 +1,266 @@
+---
+import { getImage, Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+
+const cachedImages = {};
+
+function buildArtUrl(artId, itemType = null) {
+	if (!artId) {
+            return undefined;
+	}
+	switch (itemType) {
+		case "album":
+            		return `https://f4.bcbits.com/img/a${artId}_0.jpg`
+        	case "artist":
+            		return `https://f4.bcbits.com/img/000${artId}_0.png`
+        	default:
+            		return `https://f4.bcbits.com/img/a${artId}_0.png`
+	}
+}
+
+async function getImageUrl(artId, itemType = null) {
+	const src = buildArtUrl(artId, itemType);
+	if (!src) {
+		return undefined;
+	}
+	
+	cachedImages[src] ??= await getImage({ src, format: 'webp', inferSize: true, layout: 'constrained' });
+	return cachedImages[src];
+}
+
+const { 
+	class: className,
+	bandId = '947464467',	
+	albumId = '3988991427',
+} = Astro.props;
+
+
+const response = await fetch(`https://bandcamp.com/api/mobile/25/tralbum_details?band_id=${bandId}&tralbum_type=a&tralbum_id=${albumId}`);
+
+const json = await response.json();
+
+const {
+	title: albumTitle,
+	bandcamp_url: albumURL,
+	art_id: albumArtId,
+	tracks,
+	tralbum_artist: albumArtist,
+	band,
+} = json;
+
+const songs = await Promise.all(tracks.map(async ({
+	title,
+	band_name: bandName,
+	streaming_url: trackUrl,
+	art_id: trackArtId,
+	duration,
+}) => {
+	const cover = await getImageUrl(trackArtId || albumArtId, trackArtId ? '' : 'album');
+	return {
+		name: title,
+		artist: bandName,
+		album: albumTitle,
+		url: trackUrl['mp3-128'],
+		cover_art_url: cover.src,
+		cover_art_srcset: cover.srcSet.attribute,
+		duration: `${String(Math.floor(duration/60)).padStart(2, '0')}:${String(Math.round(duration%60)).padStart(2, '0')}`,
+	};
+}));
+
+const hasVisuals = tracks.some(track => (track.art_id !== null));
+const sameArtist = tracks.every(track => (track.band_name === albumArtist));
+
+const playlistCover = await getImageUrl(albumArtId, 'album');
+
+const playlist = {
+	id: `playlist-${albumId}`,
+	metadata: {
+		title: albumTitle,
+		cover_art_url: playlistCover.src,
+		cover_art_srcset: playlistCover.srcSet.attribute, 
+		has_visuals: hasVisuals,
+		same_artist: sameArtist,
+	},
+	songs,
+};
+
+function suffix(str) {
+	return `${str}-${playlist.id}`;
+}
+---
+
+<div
+	class:list={['amplitude-player', className]}
+	data-playlist={JSON.stringify(playlist)}
+>
+	<div class="relative">
+		<Image
+			class="w-full py-1 relative"
+			src={buildArtUrl(albumArtId, 'album')}
+			height="400"
+			width="400"
+			widths={[200, 300, 400]}
+			quality="mid"
+			format="webp"
+			alt={`Pochette de l'album ${playlist.metadata.title} de ${band.name}`}
+		/>
+		<div id={suffix('play-pause')} class="amplitude-play-pause absolute w-20 h-20 top-1/2 left-1/2 -mt-10 -ml-10 group" data-amplitude-playlist={playlist.id}>
+			<div id={suffix('loader')} data-amplitude-loader class="z-2 w-full h-full absolute loading loading-spinner text-primary group-hover:text-primary-content"></div>
+			<div data-amplitude-button class="btn btn-circle btn-outline btn-primary btn-disabled [--border:3px] p-3 play absolute w-full h-full bg-cover bg-repeat cursor-pointer" role="button" data-amplitude-playlist={playlist.id}><Icon class="w-full h-full " name="fa7-solid:play" title={`Lancer la lecture de ${playlist.metadata.title}`} /></div>
+			<div data-amplitude-button class="btn btn-circle btn-outline btn-primary btn-disabled [--border:3px] p-3 pause absolute w-full h-full bg-cover bg-repeat cursor-pointer" role="button" data-amplitude-playlist={playlist.id}><Icon class="w-full h-full" name="fa7-solid:pause" title={`Arrêter la lecture de ${playlist.metadata.title}`} /></div>
+		</div>
+	</div>
+	
+	<!--div class="song-meta-data flex flex-col w-full py-1"-->
+		<!--div class="font-bold">{playlist.metadata.title}</div-->
+		<!--div class="">{band.name}</div-->
+        </div-->
+
+        <div class="time-progress p-1">
+            	<div class="w-full flex flex-row items-center">
+              		<div class="time-container w-[3em] pr-1">
+                		<span class="current-time align-text-top">
+                  			<span class="amplitude-current-minutes" data-amplitude-playlist={playlist.id}>00</span>:<span class="amplitude-current-seconds" data-amplitude-playlist={playlist.id}>00</span>
+                		</span>
+              		</div>
+			<div class="flex-1">
+				<input type="range" disabled value="0" id={suffix('song-slider')} class="amplitude-song-slider w-full progress range range-xs range-primary" data-amplitude-playlist={playlist.id} />
+			</div>
+			<label for={suffix('song-slider')} class="sr-only">Curseur de progression de la piste en cours de lecture pour l'album {playlist.metadata.title}</label>
+              	</div>
+	</div>
+
+	<ul class="list bg-base-200 rounded-box shadow-md max-h-[260px] overflow-y-scroll">
+	{songs.map((song, index) => (
+  		<li class="list-row cursor-pointer amplitude-song-container amplitude-play-pause hover:bg-base-300" data-amplitude-playlist={playlist.id} data-amplitude-song-index={index}>
+			<div class="playlist-song-index flex flex-col justify-center">{String(index + 1).padStart(2, '0')}</div>
+    			{ hasVisuals && <div><img class="size-10 rounded-box main-album-art" data-amplitude-song-info="cover_art_url" data-amplitude-playlist={playlist.id} data-amplitude-song-index={index} /></div> }
+    			<div class={`playlist-song-meta flex flex-col justify-center ${hasVisuals && 'list-col-grow'}`}>
+      				<div class="playlist-song-name" data-amplitude-song-info="name" data-amplitude-playlist={playlist.id} data-amplitude-song-index={index} ></div>
+      				{ !sameArtist && <div class="text-xs font-semibold opacity-60 playlist-song-artist" data-amplitude-song-info="artist" data-amplitude-playlist={playlist.id} data-amplitude-song-index={index} ></div> }
+    			</div>
+			<div class="text-xs flex flex-col justify-center items-center playlist-song-duration" data-amplitude-song-info="duration" data-amplitude-playlist={playlist.id} data-amplitude-song-index={index} ></div>
+		</li>
+	))}
+	</ul>	
+</div>
+
+<style>
+
+.amplitude-play-pause,
+.amplitude-play-pause.amplitude-paused {
+	.play {
+		opacity: 1;
+		z-index: 1;
+	}
+	.pause {
+		opacity: 0;
+		z-index: -1;
+	}
+}
+.amplitude-play-pause.amplitude-playing {
+	.play {
+		opacity: 0;
+		z-index: -1;
+	}
+	.pause {
+		opacity: 1;
+		z-index: 1;
+	}
+}
+
+.amplitude-active-song-container {
+	background: var(--color-base-300);
+	font-weight: bold;
+}
+</style>
+
+<script>
+	const playlists = {};
+	const players = document.querySelectorAll('.amplitude-player');
+	for (const player of players) {
+		const { id: playlistId, metadata, songs } = JSON.parse(player.dataset.playlist); 
+		playlists[playlistId] = { ...metadata, songs };
+	}
+
+	let activePlaylistId = '';
+
+	function enableCurrentSlider() {
+		const slider = document.getElementById(`song-slider-${activePlaylistId}`);
+		slider.removeAttribute('disabled');
+	}
+
+	function disableCurrentSlider() {
+		const slider = document.getElementById(`song-slider-${activePlaylistId}`);
+		slider.setAttribute('disabled', 'disabled');
+	}
+
+	function enableCurrentLoader() {
+		const loader = document.getElementById(`loader-${activePlaylistId}`);
+		loader.classList.remove('hidden');
+	}
+
+	function disableCurrentLoader() {
+		const loader = document.getElementById(`loader-${activePlaylistId}`);
+		loader.classList.add('hidden');
+	}
+
+	async function initAmplitude() {
+		const Amplitude = await import('amplitudejs');
+		Amplitude.init({
+			bindings: {
+				37: "prev",
+				39: "next",
+				32: "play_pause",
+				},
+			volume: 50,
+			songs: [{ url: '/public/empty.mp3' }],
+			playlists,
+			preload: 'none',
+			callbacks: {
+				play: () => {
+					const currentPlayButton = document.querySelector('.amplitude-play-pause.amplitude-playing');
+					const playlistId = currentPlayButton.dataset.amplitudePlaylist;
+					activePlaylistId = playlistId;
+					enableCurrentSlider();
+				},
+				pause: () => {
+					disableCurrentSlider();
+				},
+				playlist_changed: () => {
+					disableCurrentSlider();
+				},
+				canplay: () => {
+					enableCurrentSlider();
+					disableCurrentLoader();
+				},
+				waiting: () => {
+					disableCurrentSlider();
+					enableCurrentLoader();
+				},
+			},
+		});
+		for (const loader of document.querySelectorAll('[data-amplitude-loader')) {
+			loader.classList.add('hidden');
+		}
+		for (const button of document.querySelectorAll('[data-amplitude-button]')) {
+			button.classList.remove('btn-disabled');
+		}
+	}
+
+	function createVisibilityObserver(element) {
+		const observer = new IntersectionObserver(function(entries)  {
+			entries.forEach(async (entry) => {
+				if (entry.isIntersecting) {
+					await initAmplitude();
+					this.disconnect();
+				}
+			});
+		});
+		observer.observe(element);
+	}
+	
+	if (players.length) {
+		createVisibilityObserver(players[0]);
+	}
+</script>

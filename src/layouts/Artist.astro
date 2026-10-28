@@ -1,0 +1,118 @@
+---
+import { getImage, Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+
+import Section from '../components/Section.astro';
+import YoutubeVideo from '../components/YoutubeVideo.astro';
+import AmplitudePlayer from '../components/AmplitudePlayer.astro';
+import SideBar from '../components/SideBar.astro';
+import Socials from '../components/Socials.astro';
+import Contact from '../components/Contact.astro';
+import DatesSection from '../components/DatesSection.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+type Props = CollectionEntry<'artistes'>['data'];
+
+const { title, description, heroImage, bio, links, videos, music, dates, contact } = Astro.props;
+
+const currentPath = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+
+const hasTeaser = videos != null && videos.teaser != null;
+const hasVideos = videos != null && videos.other != null && videos.other.length > 0;
+const hasAudio = music != null && music.bandId != null;
+const hasBioImage = bio != null && bio.image != null;
+const hasBioMembers = bio != null && bio.members != null;
+
+const path = [{ link: '/', icon: 'fa7-solid:house' }, { link: '/artistes/', text: 'artistes' }, { link: currentPath, text: title }];
+---
+<BaseLayout title={title} description={description}>
+	<div class="flex flex-1 relative items-stretch h-full w-full mx-auto">
+		<div class="hidden lg:block w-64 shrink-0" data-sidebar-wrapper>
+			<SideBar data-theme="dark">
+				{ heroImage && (
+					<div slot="top" class="w-[224px] h-[96px]">
+						<Image 
+							src={heroImage}
+							alt=""
+							width="224"
+							height="96"
+		 fit="contain"
+							format="webp"
+							class="max-w-full h-full max-h-[96px]"
+						/>
+					</div>
+				)}
+				<div slot="bottom">
+					<Contact info={contact} compact />
+					<Socials links={links} />
+				</div>
+			</SideBar>
+		</div>
+		<Section main class="w-full flex-1">
+			<Section class="w-full p-4 lg:p-8" sticky dark>
+				<h1 class="px-4 text-4xl w-full font-serif font-bold text-left lg:text-left">{title}</h1>
+				<div class="px-4 text-md w-full text-left lg:text-left text-base-content/80 tracking-wide uppercase">{description}</div>
+			</Section>
+			{ 
+				(
+					hasTeaser && 
+					<Section id="teaser" name="Teaser" wrapper>
+						<div class="flex justify-center w-full p-4">
+							<YoutubeVideo class="max-w-2xl" videoId={videos.teaser.id} title={videos.teaser.title} />
+						</div>
+					</Section>
+				) || (
+					hasVideos &&
+					<Section id="videos" name="Videos" wrapper>
+						<div class="w-full block lg:flex items-center justify-evenly gap-8 p-4">
+							{videos.other.map((video) => {
+								return (
+								<div class="flex flex-col items-center flex-1/2 mb-8 last:mb-0 lg:mb-0">
+									<YoutubeVideo videoId={video.id} title={video.title} />
+									<h3 class="p-2 text-base-content/60 text-sm tracking-wide uppercase">{video.title}</h3>
+								</div>);
+							})}
+						</div>
+					</Section>
+				)
+			}
+			<Section id="bio" name="Bio" wrapper dark right {...( hasBioImage && { split: true, background: bio.image })}>
+				<div class="w-full p-4 flex flex-col lg:flex-row items-center">
+					<div class="w-full h-full text-justify text-md lg-text-lg flex flex-col justify-evenly items-center">
+						<slot />
+						{ hasBioMembers && (	
+							<ul class="mt-8 text-center">
+							{bio.members.map((member) => {
+								return (<li><strong>{member.role}</strong> : {member.name}</li>);
+							})}
+							</ul>
+						)}
+						<Socials class="pt-8" links={links}/>
+					</div>
+				</div>
+			</Section>
+			{
+				hasAudio &&
+				<Section id="audio" name="Audio" wrapper>
+					<div class="w-full flex flex-col lg-flex:row items-center justify-center lg:justify-evenly p-4">
+						<div class="flex flex-col items-center aspect-350/670">
+							<AmplitudePlayer class="w-full" bandId={music.bandId} albumId={music.albumId} />
+						</div>
+					</div>
+				</Section>
+			}
+			{
+				dates &&
+				<Section id="prochains-concerts" name="Prochains Concerts" wrapper>
+					<DatesSection class="p-4" band={dates}/>
+				</Section>
+			}
+			<Section id="contact" name="Contact" wrapper>
+				<div class="w-full flex justify-center p-4">
+					<Contact class="max-w-sm" info={contact} />
+				</div>
+			</Section>
+		</Section>
+	</div>
+</BaseLayout>

@@ -1,0 +1,29 @@
+---
+import { Image } from 'astro:assets';
+import logo from "../assets/In-Jazz-We-Trust-Prod-Logo.png";
+
+const { class: className } = Astro.props;
+
+const fallbackYear = new Date().getFullYear();
+---
+
+<footer role="contentinfo" class:list={["flex flex-row bg-neutral text-neutral-content p-4 gap-4 justify-center items-center", className]}>
+        <Image class="bg-base-100 rounded-full" src={logo} alt="Logo de In Jazz We Trust Prod" width="36" height="36" format="webp" />
+        <p class="text-xs lg:text-sm text-right lg:text-left">
+                Copyright © In Jazz We Trust Prod. 2025-<span id="footer-year">{fallbackYear}</span>
+                <br class="lg:hidden" />
+                <span class="hidden lg:inline"> ·</span> Copyright Photos © <a class="hover:text-accent" title="Site web de Cédrick Nöt" href="https://www.instagram.com/cedrick_not" target="_blank" rel="noopener">Cédrick Nöt</a>
+        </ul>
+</footer>
+
+<script>
+const initFooterYear = () => {
+        const yearSpan = document.getElementById('footer-year');
+        if (yearSpan) {
+                yearSpan.textContent = new Date().getFullYear().toString();
+        }
+};
+
+initFooterYear();
+document.addEventListener('astro:page-load', initFooterYear);
+</script>

@@ -1,0 +1,38 @@
+---
+import { Icon } from 'astro-icon/components';
+
+import { defaultContact } from '../config/contact';
+
+const { info = defaultContact, compact, class: className, ...rest } = Astro.props;
+
+const {
+	person = defaultContact.person,
+	role = defaultContact.role,
+	tel = defaultContact.tel,
+	email = defaultContact.email,
+} = info;
+
+const displayTelephone = `(+33) ${tel}`;
+const telephoneHref = `tel:+33${tel}`;
+const emailHref = `mailto:${email}`;
+---
+{ 
+	compact ? (
+		<div class="text-sm">
+			<p class="py-1 px-3 font-semibold tracking-wider text-base-content/40">{role}</p>
+			<p class="py-1 px-3">{person}</p>
+			<p class="py-1 px-3 break-all"><a class="hover:text-accent inline-flex items-center" role="button" href={telephoneHref}><Icon class="mr-2 shrink-0" title=`Téléphone de ${person} (${role})` name="fa7-solid:phone" />{displayTelephone}</a></p>
+			<p class="py-1 px-3 break-all"><a class="hover:text-accent inline-flex items-center" role="button" href={emailHref}><Icon class="mr-2 shrink-0" title=`Email de ${person} (${role})` name="fa7-solid:envelope" />{email}</a></p>
+		</div>
+	) : (
+		<div class:list={['w-full', 'card', 'bg-base-200', 'shadow-sm', className]} ...rest>
+			<div class="card-body">
+				<h3 class="card-title justify-center">{role}</h3>
+				<p class="text-lg text-center">{person}</p>
+				<div class="divider m-0"></div>
+				<p class="text-lg break-all"><a class="hover:text-accent inline-flex items-center" role="button" href={telephoneHref}><Icon class="mr-2 shrink-0" title=`Téléphone de ${person} (${role})` name="fa7-solid:phone" />{displayTelephone}</a></p>
+				<p class="text-lg break-all"><a class="hover:text-accent inline-flex items-center" role="button" href={emailHref}><Icon class="mr-2 shrink-0" title=`Email de ${person} (${role})` name="fa7-solid:envelope" />{email}</a></p>
+			</div>
+		</div>
+	)
+}

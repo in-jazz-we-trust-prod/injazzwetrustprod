@@ -1,0 +1,61 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+
+import FormattedDate from './FormattedDate.astro';
+
+const { news, titleElement: TitleElement = 'h3' } = Astro.props;
+
+const compact = !news;
+let sortedPosts = news;
+if (compact) {
+	const posts = await getCollection('actualites');
+	sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 2);
+}
+---
+<div class="w-full p-4 flex flex-col lg:flex-row lg:flex-wrap gap-6">
+{
+	sortedPosts.map((post) => (
+		<div class="relative w-full lg:w-[calc(50%-12px)] min-h-[300px] shadow-md overflow-hidden group">
+			{ post.data.heroImage ? (
+				<Image
+					src={post.data.heroImage}
+					alt={`Photo de présentation de l'actualité ${post.data.title}`}
+					format="webp"
+					width={800}
+					height={450}
+					layout="none"
+					class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+				/>
+			) : (
+				<div class="absolute inset-0 w-full h-full bg-slate-800" />
+			)}
+			<div class="absolute inset-0 bg-gradient-to-t from-base-100/90 via-base-100/50 to-transparent mt-auto pointer-events-none"></div>
+			<div class="absolute inset-0 bg-base-100/75 backdrop-blur-xs opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+			<div class="hidden lg:flex absolute inset-0 z-20 flex items-center justify-center pointer-events-none opacity-0 scale-95 transition-all duration-300 ease-out lg:group-hover:opacity-100 lg:group-hover:scale-100">
+				<a
+					href={`/actualites/${post.id}/`}
+					class="btn btn-outline hover:btn-primary pointer-events-auto shadow-lg px-6"
+				>Voir l'article</a>
+			</div>
+			<div class="absolute inset-0 z-10 p-6 flex flex-col justify-end pointer-events-none">
+				<div class="flex flex-col self-start max-w-full">
+					<TitleElement class="text-2xl font-bold text-base-content font-serif">{post.data.title}</TitleElement>
+					<div class="w-full border-t-2 border-primary my-2"></div>
+				</div>
+				<p class="text-sm uppercase tracking-wide text-base-content/80 mt-1 max-w-md"><FormattedDate date={post.data.pubDate} /></p>
+				<div class="mt-4 lg:hidden">
+					<a
+						href={`/actualites/${post.id}/`}
+						class="btn btn-primary btn-sm pointer-events-auto shadow-lg"
+					>Voir l'article</a>
+				</div>	
+			</div>
+		</div> 
+	))
+}
+{
+	compact &&
+	<div class="w-full p-4 flex justify-center"><a href="/actualites/" class="btn btn-outline hover:btn-primary">Voir plus d'actualités</a></div>
+}
+</div>

@@ -1,0 +1,76 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+
+const posts = await getCollection('actualites');
+const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const latestPost = sortedPosts[0]; 
+
+let shouldShowPopup = false;
+let Content = null; // Initialisation du composant de contenu
+
+if (latestPost && latestPost.data.endDate) {
+        const today = new Date();
+        const expirationDate = new Date(latestPost.data.endDate);
+        shouldShowPopup = today <= expirationDate;
+
+        if (shouldShowPopup) {
+                const rendered = await render(latestPost);
+                Content = rendered.Content;
+        }
+}
+---
+{shouldShowPopup && latestPost && (
+	<dialog id="announcement-modal" class="modal modal-bottom sm:modal-middle">
+		<div class="modal-box border border-primary/20 p-0 overflow-hidden bg-base-100">
+			
+			{latestPost.data.heroImage && (
+				<div class="w-full h-48 relative">
+					<Image 
+						src={latestPost.data.heroImage} 
+						alt="" 
+						layout="none"
+						class="w-full h-full object-cover"
+					/>
+				</div>
+			)}
+			<form method="dialog">
+				<button class="btn btn-sm btn-circle btn-neutral hover:btn-primary absolute right-2 top-2">✕</button>
+			</form>
+			
+			<div class="p-6">
+				<div class="font-serif font-bold text-2xl text-primary">{latestPost.data.title}</div>
+				<div class="italic text-base-content/60 tracking-wide text-lg">{latestPost.data.subtitle}</div>
+				
+				<div class="py-4 text-base-content text-md leading-relaxed prose prose-md max-w-none [&_a]:hover:text-primary">
+					{Content && <Content />}
+				</div>
+				
+				<div class="modal-action flex justify-center items-center mt-6">
+
+					{latestPost.data.cta && (
+						<a href={latestPost.data.cta.url} class="btn btn-outline hover:btn-primary btn-sm">
+							{latestPost.data.cta.text}
+						</a>
+					)}
+				</div>
+			</div>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
+)}
+
+<script>
+        function handlePopup() {
+                const modal = document.getElementById('announcement-modal') as HTMLDialogElement | null;
+                if (modal && typeof modal.showModal === 'function') {
+                        setTimeout(() => {
+                                modal.showModal();
+                        }, 1000);
+                }
+        }
+        handlePopup();
+        document.addEventListener('astro:after-swap', handlePopup);
+</script>

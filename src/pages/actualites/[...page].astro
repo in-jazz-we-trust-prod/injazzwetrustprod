@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import type { GetStaticPathsOptions } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import NewsSection from '../../components/NewsSection.astro';
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+  const posts = await getCollection('actualites');
+  const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+  return paginate(sortedPosts, { pageSize: 4 });
+}
+
+// Récupération de l'objet page généré par la fonction paginate d'Astro
+const { page } = Astro.props;
+const title = (page.lastPage === 1) ? 'Actualités' : `Actualités : Page ${page.currentPage}`;
+const description = "Les actualités de In Jazz We Trust Prod";
+const baseUrl = '/actualites/';
+---
+<BaseLayout title={title} description={description}>
+	<Section main class="w-full min-h-[calc(100dvh-65px)]">
+		<Section name={title} wrapper titleElement="h1">
+			<NewsSection news={page.data} titleElement="h2" />
+			{page.lastPage > 1 && (
+			<div class="w-full flex justify-center mt-8">
+			  <div class="join shadow-sm border border-base-content/10">
+			    
+			    {/* Bouton Précédent */}
+			    {page.url.prev ? (
+			      <a href={page.url.prev} class="join-item btn btn-sm">«</a>
+			    ) : (
+			      <button class="join-item btn btn-sm btn-disabled opacity-50">«</button>
+			    )}
+
+			    {/* Génération dynamique des numéros de page daisyUI */}
+			    {Array.from({ length: page.lastPage }, (_, i) => {
+			      const pageNumber = i + 1;
+			      // La page 1 correspond à l'URL sans numéro à la fin grâce à [...page]
+			      const pageUrl = pageNumber === 1 ? baseUrl : `${baseUrl}${pageNumber}/`;
+			      const isActive = pageNumber === page.currentPage;
+
+			      return (
+				<a 
+				  href={pageUrl} 
+				  class={`join-item btn btn-sm ${isActive ? 'btn-active btn-primary' : ''}`}
+				>
+				  {pageNumber}
+				</a>
+			      );
+			    })}
+
+			    {/* Bouton Suivant */}
+			    {page.url.next ? (
+			      <a href={page.url.next} class="join-item btn btn-sm">»</a>
+			    ) : (
+			      <button class="join-item btn btn-sm btn-disabled opacity-50">»</button>
+			    )}
+
+			  </div>
+			</div>
+		      )}
+		</Section>
+	</Section>
+</BaseLayout>
+
+
